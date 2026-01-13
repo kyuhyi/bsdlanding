@@ -6,6 +6,7 @@ import { Environment, PerspectiveCamera, Float } from "@react-three/drei";
 import * as THREE from "three";
 import { Crystal } from "./Crystal";
 import { Debris } from "./Debris";
+import { Starfield } from "./Starfield";
 
 export function InteractiveScene() {
   const scrollRef = useRef(0);
@@ -48,6 +49,9 @@ export function InteractiveScene() {
       <ambientLight intensity={0.5} color="#3b82f6" />
       <pointLight position={[10, 10, 10]} intensity={2} color="#a78bfa" />
       
+      {/* Starfield Background */}
+      <Starfield />
+      
       <group ref={crystalRef}>
         <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
             <Crystal scale={1.8} />
@@ -58,3 +62,4 @@ export function InteractiveScene() {
     </>
   );
 }
+

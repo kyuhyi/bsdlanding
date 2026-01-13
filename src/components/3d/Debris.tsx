@@ -6,14 +6,18 @@ import * as THREE from "three";
 import { Text } from "@react-three/drei";
 
 const CODE_SNIPPETS = [
-  "React", "Next.js", "TS", "JS", "<div>", "{}", "[]", "=>", 
+  "React", "Next.js", "TypeScript", "JavaScript", "<div>", "{}", "[]", "=>", 
   "import", "export", "const", "let", "return", "try", "catch",
-  "async", "await", "void", "any", "<>", "</>", "npm", "git"
+  "async", "await", "void", "Promise", "<>", "</>", "npm", "git",
+  "useState", "useEffect", "props", "map()", "filter()", "API",
+  "fetch()", "JSON", "CSS", "HTML", "Node.js", "Python", "AI",
+  "GPT", "function", "class", "interface", "type", "module",
+  "webpack", "vite", "tailwind", "prisma", "graphql", "REST"
 ];
 
 export function Debris({ scrollProgress }: { scrollProgress: React.MutableRefObject<number> }) {
   const groupRef = useRef<THREE.Group>(null);
-  const count = 30;
+  const count = 60;
 
   const particles = useMemo(() => {
     return new Array(count).fill(0).map(() => ({
