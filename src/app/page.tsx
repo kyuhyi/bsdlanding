@@ -6,6 +6,7 @@ import { Approach } from "@/components/home/Approach";
 import { Pricing } from "@/components/home/Pricing";
 import { BSDClass } from "@/components/home/BSDClass";
 import { Contact } from "@/components/home/Contact";
+import ExpandOnHover from "@/components/ui/expand-cards";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
       <Approach />
       <Pricing />
       <BSDClass />
+      <ExpandOnHover />
       <Contact />
       
       <footer className="py-8 bg-black border-t border-white/10 text-center text-gray-500 text-sm">
