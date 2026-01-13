@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/home/Hero";
+import { VideoSection } from "@/components/home/VideoSection";
 import { Services } from "@/components/home/Services";
 import { Approach } from "@/components/home/Approach";
 import { Pricing } from "@/components/home/Pricing";
@@ -11,6 +12,7 @@ export default function Home() {
     <main className="min-h-screen bg-space-black text-white selection:bg-brand-primary selection:text-white overflow-x-hidden">
       <Navbar />
       <Hero />
+      <VideoSection />
       <Services />
       <Approach />
       <Pricing />
@@ -23,4 +25,5 @@ export default function Home() {
     </main>
   );
 }
+
 
