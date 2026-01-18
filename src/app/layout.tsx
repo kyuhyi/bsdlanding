@@ -7,6 +7,9 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
+
 export const metadata: Metadata = {
   title: "AI VIBE CODING = 바퍼와 함께 | 코딩 포기자도 가능한 바이브코딩",
   description:
@@ -50,41 +53,51 @@ export const metadata: Metadata = {
   },
 };
 
-const ONESIGNAL_SCRIPT = `
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "59c7f6c5-47bc-417d-a7a5-7410895a12b8",
-      allowLocalhostAsSecureOrigin: true,
-      serviceWorkerParam: { scope: "/" },
-      serviceWorkerPath: "OneSignalSDKWorker.js",
-      safari_web_id: "web.onesignal.auto.17646d91-e737-4d9d-8f23-8618e47f5e3f",
-      notifyButton: {
-        enable: true,
-      },
-      promptOptions: {
-        slidedown: {
-          enabled: true,
-          autoPrompt: true,
-          timeDelay: 5,
-          pageViews: 1
+// 📡 FCM(구글 푸시) 관리 컴포넌트
+function FCMManager() {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user || typeof window === "undefined") return;
+
+    const setupFCM = async () => {
+      try {
+        const { messaging, db } = await import("@/lib/firebase");
+        if (!messaging) return;
+
+        // 1. 알림 권한 요청
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          console.warn("알림 권한이 거부되었습니다.");
+          return;
         }
+
+        // 2. FCM 토큰 가져오기
+        const { getToken } = await import("firebase/messaging");
+        const currentToken = await getToken(messaging, {
+          vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY
+        });
+
+        if (currentToken) {
+          console.log("FCM 토큰 수집 성공:", currentToken);
+          // 3. Firestore 유저 문서에 토큰 저장
+          const { doc, updateDoc, arrayUnion, serverTimestamp } = await import("firebase/firestore");
+          const userRef = doc(db, "users", user.uid);
+          await updateDoc(userRef, {
+            fcmTokens: arrayUnion(currentToken),
+            lastTokenSync: serverTimestamp()
+          });
+        }
+      } catch (err) {
+        console.error("FCM 설정 중 오류 발생:", err);
       }
-    }).catch(e => console.error("OneSignal Init Error:", e));
+    };
 
-    // 🎯 인앱 메시지 활성화
-    OneSignal.Slidedown.addEventListener('slidedownShown', (event) => {
-      console.log('📱 In-App Message shown:', event);
-    });
+    setupFCM();
+  }, [user]);
 
-    // Link user to OneSignal if logged in
-    const userId = localStorage.getItem("bsd_user_id"); // Temporary check
-    if (userId) OneSignal.login(userId);
-    
-    // 인앱 메시지 이벤트 리스너 (선택사항)
-    console.log('✅ OneSignal In-App Messages enabled');
-  });
-`;
+  return null;
+}
 
 export default function RootLayout({
   children,
@@ -93,20 +106,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <head>
-        <script
-          src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
-          defer
-        ></script>
-        <script
-          unsafe-inline="true"
-          dangerouslySetInnerHTML={{ __html: ONESIGNAL_SCRIPT }}
-        />
-      </head>
       <body
         className={`${outfit.variable} font-sans antialiased bg-space-black text-white selection:bg-brand-primary selection:text-white`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+          <FCMManager />
+        </AuthProvider>
       </body>
     </html>
   );

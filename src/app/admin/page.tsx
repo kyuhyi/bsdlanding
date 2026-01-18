@@ -15,6 +15,7 @@ interface UserProfile {
     displayName: string;
     photoURL: string;
     lastLogin: Timestamp;
+    fcmTokens?: string[];
 }
 
 export default function AdminPage() {
@@ -28,20 +29,18 @@ export default function AdminPage() {
     const [sendingPush, setSendingPush] = useState(false);
     const [pushStatus, setPushStatus] = useState<"idle" | "success" | "error">("idle");
     const [uploadingImage, setUploadingImage] = useState(false);
-    const [oneSignalActive, setOneSignalActive] = useState(false);
-    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
 
     useEffect(() => {
-        const checkOneSignal = setInterval(() => {
-            const os = (window as any).OneSignal;
-            if (os?.initialized) {
-                setOneSignalActive(true);
-                setIsSubscribed(os.User.PushSubscription.optedIn);
-                clearInterval(checkOneSignal);
-            }
-        }, 1000);
-        return () => clearInterval(checkOneSignal);
+        if (typeof window !== "undefined") {
+            setNotificationPermission(Notification.permission);
+        }
     }, []);
+
+    const requestPermission = async () => {
+        const permission = await Notification.requestPermission();
+        setNotificationPermission(permission);
+    };
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -216,22 +215,22 @@ export default function AdminPage() {
                                     <Bell className="w-6 h-6 text-brand-primary" />
                                     웹 푸시 발송
                                 </h2>
-                                <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${oneSignalActive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                                    {oneSignalActive ? 'SDK Online' : 'SDK Offline'}
+                                <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${notificationPermission === 'granted' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                    {notificationPermission === 'granted' ? 'FCM Online' : 'FCM Offline'}
                                 </div>
                             </div>
 
-                            {!isSubscribed && oneSignalActive && (
+                            {notificationPermission !== 'granted' && (
                                 <div className="mb-6 p-4 bg-brand-primary/10 border border-brand-primary/20 rounded-xl flex items-center justify-between">
                                     <div className="text-sm">
-                                        <p className="font-bold text-white">알림 미구독 상태</p>
-                                        <p className="text-gray-400 text-xs">푸시를 받으려면 구독이 필요합니다.</p>
+                                        <p className="font-bold text-white">알림 권한 필요</p>
+                                        <p className="text-gray-400 text-xs">푸시를 받으려면 브라우저 알림 권한이 필요합니다.</p>
                                     </div>
                                     <button
-                                        onClick={() => (window as any).OneSignal.Notifications.requestPermission()}
+                                        onClick={requestPermission}
                                         className="px-4 py-2 bg-brand-primary text-white text-xs font-bold rounded-lg hover:bg-blue-600 transition-colors"
                                     >
-                                        지금 구독하기
+                                        지금 허용하기
                                     </button>
                                 </div>
                             )}

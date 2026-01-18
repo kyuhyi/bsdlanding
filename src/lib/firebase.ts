@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getMessaging, Messaging } from "firebase/messaging";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,16 +13,27 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase only if API Key is present to avoid build-time crashes (static pre-rendering)
+// Initialize Firebase
+let app: any;
 let auth: any;
 let db: any;
+let messaging: Messaging | undefined;
 let googleProvider: any;
 
 if (firebaseConfig.apiKey) {
-    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
     googleProvider = new GoogleAuthProvider();
+    
+    // Messaging은 브라우저(client-side) 환경에서만 초기화
+    if (typeof window !== "undefined") {
+        try {
+            messaging = getMessaging(app);
+        } catch (err) {
+            console.error("Firebase Messaging error:", err);
+        }
+    }
 }
 
-export { auth, db, googleProvider };
+export { auth, db, googleProvider, messaging };

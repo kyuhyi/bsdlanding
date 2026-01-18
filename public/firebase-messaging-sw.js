@@ -1,0 +1,52 @@
+importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js");
+
+// Firebase 앱 설정 (환경 변수가 아닌 실제 값을 넣어야 합니다)
+const firebaseConfig = {
+    apiKey: "AIzaSyA74W3fASfF93HD9Ig_xu5q7aO7X1X3C5A",
+    authDomain: "test100-31e3c.firebaseapp.com",
+    projectId: "test100-31e3c",
+    storageBucket: "test100-31e3c.firebasestorage.app",
+    messagingSenderId: "305106561114", // 이 값은 실제 메시징 발신자 ID로 교체되어야 합니다
+    appId: "1:305106561114:web:e0f46a9e16060139b4f0b2" // 이 값은 실제 앱 ID로 교체되어야 합니다
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const messaging = firebase.messaging();
+
+// 백그라운드 메시지 핸들러
+messaging.onBackgroundMessage((payload) => {
+    console.log("[firebase-messaging-sw.js] Background Message:", payload);
+
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+        body: payload.notification.body,
+        icon: payload.notification.image || "/favicon.ico",
+        data: {
+            url: payload.data?.link || "/"
+        }
+    };
+
+    self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// 알림 클릭 시 해당 URL로 이동
+self.addEventListener("notificationclick", (event) => {
+    event.notification.close();
+    const urlToOpen = event.notification.data.url;
+
+    event.waitUntil(
+        clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+            for (let i = 0; i < windowClients.length; i++) {
+                const client = windowClients[i];
+                if (client.url === urlToOpen && "focus" in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(urlToOpen);
+            }
+        })
+    );
+});

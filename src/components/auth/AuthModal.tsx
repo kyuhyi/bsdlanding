@@ -21,11 +21,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     if (!isOpen) return null;
 
     const saveUserToFirestore = async (user: any) => {
-        // Link to OneSignal for Push targeting
-        if (typeof (window as any).OneSignal !== 'undefined') {
-            (window as any).OneSignal.login(user.uid);
-        }
-
         const userRef = doc(db, "users", user.uid);
         await setDoc(userRef, {
             uid: user.uid,

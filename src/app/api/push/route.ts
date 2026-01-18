@@ -1,56 +1,56 @@
 import { NextResponse } from "next/server";
-
-const ONESIGNAL_APP_ID = "59c7f6c5-47bc-417d-a7a5-7410895a12b8";
-const ONESIGNAL_REST_API_KEY = process.env.ONESIGNAL_REST_API_KEY;
+// 서버 사이드에서는 별도의 firebase-admin 설정을 사용합니다.
+import { adminMessaging as fcm, adminDb as db } from "@/lib/firebase-admin";
 
 export async function POST(request: Request) {
     try {
         const { title, message, imageUrl, linkUrl } = await request.json();
 
-        if (!ONESIGNAL_REST_API_KEY) {
-            return NextResponse.json({ error: "OneSignal API Key is missing" }, { status: 500 });
-        }
-
-        console.log("Sending Push to OneSignal:", { title, message, imageUrl, linkUrl });
+        // 1. 모든 유저의 FCM 토큰 가져오기
+        const usersSnapshot = await db.collection("users").get();
+        const tokens: string[] = [];
         
-        const payload: any = {
-            app_id: ONESIGNAL_APP_ID,
-            included_segments: ["Total Subscriptions"],
-            headings: { en: title },
-            contents: { en: message },
-        };
-
-        // 이미지 URL이 있으면 추가
-        if (imageUrl) {
-            payload.big_picture = imageUrl;
-            payload.chrome_web_image = imageUrl;
-            payload.firefox_icon = imageUrl;
-        }
-
-        // 링크 URL이 있으면 추가
-        if (linkUrl) {
-            payload.url = linkUrl;
-        }
-
-        const response = await fetch("https://onesignal.com/api/v1/notifications", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json; charset=utf-8",
-                "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`,
-            },
-            body: JSON.stringify(payload),
+        usersSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.fcmTokens && Array.isArray(userData.fcmTokens)) {
+                tokens.push(...userData.fcmTokens);
+            }
         });
 
-        const data = await response.json();
-        console.log("OneSignal Response:", data);
+        const uniqueTokens = Array.from(new Set(tokens)).filter(t => !!t);
 
-        if (!response.ok) {
-            return NextResponse.json(data, { status: response.status });
+        if (uniqueTokens.length === 0) {
+            return NextResponse.json({ error: "No registered devices found" }, { status: 400 });
         }
 
-        return NextResponse.json(data);
+        console.log(`Sending FCM Push to ${uniqueTokens.length} tokens:`, { title, message, imageUrl, linkUrl });
+
+        // 2. FCM 메시지 구성
+        const fcmMessage = {
+            notification: {
+                title: title,
+                body: message,
+                ...(imageUrl ? { image: imageUrl } : {})
+            },
+            data: {
+                link: linkUrl || "/",
+            },
+            tokens: uniqueTokens,
+        };
+
+        // 3. 멀티캐스트 전송
+        const response = await fcm.sendEachForMulticast(fcmMessage);
+        
+        console.log("FCM Response:", response);
+
+        return NextResponse.json({
+            success: true,
+            successCount: response.successCount,
+            failureCount: response.failureCount,
+            recipients: uniqueTokens.length
+        });
     } catch (error: any) {
-        console.error("Push Error Detail:", error);
+        console.error("FCM Push Error Detail:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
