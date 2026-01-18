@@ -6,7 +6,7 @@ import { InteractiveScene } from "../3d/Scene";
 
 export function Hero() {
   const [mounted, setMounted] = React.useState(false);
-  
+
   React.useEffect(() => {
     setMounted(true);
   }, []);
@@ -15,9 +15,9 @@ export function Hero() {
     <section className="relative h-screen flex items-center justify-center overflow-hidden" id="hero">
       <div className="fixed inset-0 z-0 pointer-events-none">
         {mounted && (
-            <Canvas eventSource={document.body} gl={{ antialias: true, alpha: true }} dpr={[1, 2]}>
-                <InteractiveScene />
-            </Canvas>
+          <Canvas eventSource={document.body} gl={{ antialias: true, alpha: true }} dpr={[1, 2]}>
+            <InteractiveScene />
+          </Canvas>
         )}
       </div>
 
@@ -29,7 +29,7 @@ export function Hero() {
           AI VIBE CODING
         </h1>
         <p className="text-xl md:text-2xl text-blue-200/80 max-w-2xl mx-auto mb-12 font-light leading-relaxed animate-fade-in slide-up delay-100">
-          미래를 코딩하다. <br className="hidden md:block"/>
+          미래를 코딩하다. <br className="hidden md:block" />
           프리미엄 오프라인 코딩 교육의 새로운 기준.
         </p>
         <div className="flex flex-col md:flex-row gap-6 justify-center items-center animate-fade-in slide-up delay-200">
@@ -40,6 +40,7 @@ export function Hero() {
             커리큘럼 확인하기
           </button>
         </div>
+
       </div>
     </section>
   );

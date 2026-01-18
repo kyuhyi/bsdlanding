@@ -39,6 +39,34 @@ export const metadata: Metadata = {
   },
 };
 
+const ONESIGNAL_SCRIPT = `
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "59c7f6c5-47bc-417d-a7a5-7410895a12b8",
+      allowLocalhostAsSecureOrigin: true,
+      serviceWorkerParam: { scope: "/" },
+      serviceWorkerPath: "OneSignalSDKWorker.js",
+      safari_web_id: "web.onesignal.auto.17646d91-e737-4d9d-8f23-8618e47f5e3f",
+      notifyButton: {
+        enable: true,
+      },
+      promptOptions: {
+        slidedown: {
+          enabled: true,
+          autoPrompt: true,
+          timeDelay: 5,
+          pageViews: 1
+        }
+      }
+    }).catch(e => console.error("OneSignal Init Error:", e));
+
+    // Link user to OneSignal if logged in
+    const userId = localStorage.getItem("bsd_user_id"); // Temporary check
+    if (userId) OneSignal.login(userId);
+  });
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,6 +74,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+        <script unsafe-inline="true" dangerouslySetInnerHTML={{ __html: ONESIGNAL_SCRIPT }} />
+      </head>
       <body className={`${outfit.variable} font-sans antialiased bg-space-black text-white selection:bg-brand-primary selection:text-white`}>
         {children}
       </body>
