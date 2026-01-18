@@ -23,6 +23,8 @@ export default function AdminPage() {
     const [loading, setLoading] = useState(true);
     const [pushTitle, setPushTitle] = useState("");
     const [pushMessage, setPushMessage] = useState("");
+    const [pushImageUrl, setPushImageUrl] = useState("");
+    const [pushLinkUrl, setPushLinkUrl] = useState("");
     const [sendingPush, setSendingPush] = useState(false);
     const [pushStatus, setPushStatus] = useState<"idle" | "success" | "error">("idle");
     const [oneSignalActive, setOneSignalActive] = useState(false);
@@ -77,13 +79,20 @@ export default function AdminPage() {
             const response = await fetch("/api/push", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title: pushTitle, message: pushMessage }),
+                body: JSON.stringify({ 
+                    title: pushTitle, 
+                    message: pushMessage,
+                    imageUrl: pushImageUrl || undefined,
+                    linkUrl: pushLinkUrl || undefined
+                }),
             });
 
             if (response.ok) {
                 setPushStatus("success");
                 setPushTitle("");
                 setPushMessage("");
+                setPushImageUrl("");
+                setPushLinkUrl("");
             } else {
                 setPushStatus("error");
             }
@@ -208,6 +217,26 @@ export default function AdminPage() {
                                         onChange={(e) => setPushMessage(e.target.value)}
                                         placeholder="알림 내용을 입력하세요."
                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-primary outline-none resize-none"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">이미지 URL (선택)</label>
+                                    <input
+                                        type="url"
+                                        value={pushImageUrl}
+                                        onChange={(e) => setPushImageUrl(e.target.value)}
+                                        placeholder="https://example.com/image.jpg"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-primary outline-none"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-300">링크 URL (선택)</label>
+                                    <input
+                                        type="url"
+                                        value={pushLinkUrl}
+                                        onChange={(e) => setPushLinkUrl(e.target.value)}
+                                        placeholder="https://example.com"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-primary outline-none"
                                     />
                                 </div>
 

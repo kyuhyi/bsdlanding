@@ -5,25 +5,40 @@ const ONESIGNAL_REST_API_KEY = process.env.ONESIGNAL_REST_API_KEY;
 
 export async function POST(request: Request) {
     try {
-        const { title, message } = await request.json();
+        const { title, message, imageUrl, linkUrl } = await request.json();
 
         if (!ONESIGNAL_REST_API_KEY) {
             return NextResponse.json({ error: "OneSignal API Key is missing" }, { status: 500 });
         }
 
-        console.log("Sending Push to OneSignal:", { title, message });
+        console.log("Sending Push to OneSignal:", { title, message, imageUrl, linkUrl });
+        
+        const payload: any = {
+            app_id: ONESIGNAL_APP_ID,
+            included_segments: ["Total Subscriptions"],
+            headings: { en: title },
+            contents: { en: message },
+        };
+
+        // 이미지 URL이 있으면 추가
+        if (imageUrl) {
+            payload.big_picture = imageUrl;
+            payload.chrome_web_image = imageUrl;
+            payload.firefox_icon = imageUrl;
+        }
+
+        // 링크 URL이 있으면 추가
+        if (linkUrl) {
+            payload.url = linkUrl;
+        }
+
         const response = await fetch("https://onesignal.com/api/v1/notifications", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json; charset=utf-8",
                 "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`,
             },
-            body: JSON.stringify({
-                app_id: ONESIGNAL_APP_ID,
-                included_segments: ["Total Subscriptions"],
-                headings: { en: title },
-                contents: { en: message },
-            }),
+            body: JSON.stringify(payload),
         });
 
         const data = await response.json();

@@ -7,7 +7,6 @@ import { Pricing } from "@/components/home/Pricing";
 import { BSDClass } from "@/components/home/BSDClass";
 import { Contact } from "@/components/home/Contact";
 import ExpandOnHover from "@/components/ui/expand-cards";
-import InAppMessageTester from "@/components/InAppMessageTester";
 
 export default function Home() {
   return (
@@ -21,9 +20,6 @@ export default function Home() {
       <BSDClass />
       <ExpandOnHover />
       <Contact />
-      
-      {/* 인앱 메시지 테스터 (개발용) */}
-      <InAppMessageTester />
       
       <footer className="py-8 bg-black border-t border-white/10 text-center text-gray-500 text-sm">
         <p>© 2026 BSD VIBE CODING. All rights reserved.</p>
