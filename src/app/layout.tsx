@@ -9,15 +9,25 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: "AI VIBE CODING = 바퍼와 함께 | 코딩 포기자도 가능한 바이브코딩",
-  description: "코딩 포기자도 가능한 바이브코딩! AI와 함께하는 새로운 코딩 교육의 시작. 바이브코딩, 퍼널마케팅, n8n 자동화를 한번에 배우세요.",
-  keywords: ["바이브코딩", "vibe coding", "AI 코딩", "n8n", "퍼널마케팅", "코딩 교육", "노코드"],
+  description:
+    "코딩 포기자도 가능한 바이브코딩! AI와 함께하는 새로운 코딩 교육의 시작. 바이브코딩, 퍼널마케팅, n8n 자동화를 한번에 배우세요.",
+  keywords: [
+    "바이브코딩",
+    "vibe coding",
+    "AI 코딩",
+    "n8n",
+    "퍼널마케팅",
+    "코딩 교육",
+    "노코드",
+  ],
   authors: [{ name: "BSD" }],
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
     title: "AI VIBE CODING = 바퍼와 함께",
-    description: "코딩 포기자도 가능한 바이브코딩! AI와 함께하는 새로운 코딩 교육의 시작.",
+    description:
+      "코딩 포기자도 가능한 바이브코딩! AI와 함께하는 새로운 코딩 교육의 시작.",
     url: "https://vibe-coding-two-beta.vercel.app",
     siteName: "BSD VIBE CODING",
     images: [
@@ -34,7 +44,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "AI VIBE CODING = 바퍼와 함께",
-    description: "코딩 포기자도 가능한 바이브코딩! AI와 함께하는 새로운 코딩 교육의 시작.",
+    description:
+      "코딩 포기자도 가능한 바이브코딩! AI와 함께하는 새로운 코딩 교육의 시작.",
     images: ["/open.jpeg"],
   },
 };
@@ -61,9 +72,17 @@ const ONESIGNAL_SCRIPT = `
       }
     }).catch(e => console.error("OneSignal Init Error:", e));
 
+    // 🎯 인앱 메시지 활성화
+    OneSignal.Slidedown.addEventListener('slidedownShown', (event) => {
+      console.log('📱 In-App Message shown:', event);
+    });
+
     // Link user to OneSignal if logged in
     const userId = localStorage.getItem("bsd_user_id"); // Temporary check
     if (userId) OneSignal.login(userId);
+    
+    // 인앱 메시지 이벤트 리스너 (선택사항)
+    console.log('✅ OneSignal In-App Messages enabled');
   });
 `;
 
@@ -75,10 +94,18 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-        <script unsafe-inline="true" dangerouslySetInnerHTML={{ __html: ONESIGNAL_SCRIPT }} />
+        <script
+          src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+          defer
+        ></script>
+        <script
+          unsafe-inline="true"
+          dangerouslySetInnerHTML={{ __html: ONESIGNAL_SCRIPT }}
+        />
       </head>
-      <body className={`${outfit.variable} font-sans antialiased bg-space-black text-white selection:bg-brand-primary selection:text-white`}>
+      <body
+        className={`${outfit.variable} font-sans antialiased bg-space-black text-white selection:bg-brand-primary selection:text-white`}
+      >
         {children}
       </body>
     </html>
