@@ -19,18 +19,18 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
     console.log("[firebase-messaging-sw.js] Background Message:", payload);
 
-    if (!payload.notification) {
-        console.log("No notification payload found");
-        return;
-    }
+    const { title, body, image } = payload.notification || {};
+    const { link } = payload.data || {};
 
-    const notificationTitle = payload.notification.title || "VIBE CODING";
+    const notificationTitle = title || "VIBE CODING";
     const notificationOptions = {
-        body: payload.notification.body || "새로운 메시지가 도착했습니다.",
-        icon: payload.notification.image || "/bsd-white.png", // 고해상도 아이콘 권장
+        body: body || "새로운 메시지가 도착했습니다.",
+        icon: image || "/bsd-white.png",
         badge: "/bsd-white.png",
+        tag: "vibe-push-notification", // 같은 태그는 최신것으로 덮어씀
+        renotify: true,
         data: {
-            url: payload.data?.link || "/"
+            url: link || "/"
         }
     };
 

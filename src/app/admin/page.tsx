@@ -97,7 +97,7 @@ export default function AdminPage() {
                 setPushImageUrl("");
                 setPushLinkUrl("");
                 
-                // OneSignal 응답 정보 표시
+                // 푸시 응답 정보 표시
                 if (data.recipients) {
                     console.log(`✅ 푸시 발송 성공! 수신자: ${data.recipients}명`);
                 }

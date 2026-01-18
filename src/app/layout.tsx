@@ -60,19 +60,20 @@ export const metadata: Metadata = {
   },
 };
 
-// 📡 FCM(구글 푸시) 관리 및 클린업 컴포넌트
+// 📡 FCM(구글 푸시) 관리 및 서비스 워커 클린업 컴포넌트
 function FCMManager() {
   const { user } = useAuth();
 
   useEffect(() => {
-    // 🧹 기존 OneSignal 및 불필요한 서비스 워커 정리
+    // 🧹 불필요하거나 꼬인 서비스 워커 강제 정리
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then((registrations) => {
         for (let registration of registrations) {
-          if (registration.active?.scriptURL.includes("OneSignal")) {
+          const swUrl = registration.active?.scriptURL || "";
+          // firebase-messaging-sw.js가 아닌 모든 워커는 제거 (OneSignal 등 잔재 방지)
+          if (!swUrl.includes("firebase-messaging-sw.js")) {
             registration.unregister().then(() => {
-              console.log("🗑️ 기존 OneSignal 서비스 워커 제거 완료");
-              window.location.reload(); // 제거 후 새로고침하여 상태 반영
+              console.log("🗑️ 비표준 서비스 워커 제거 완료:", swUrl);
             });
           }
         }
@@ -93,13 +94,16 @@ function FCMManager() {
           return;
         }
 
-        // 2. 서비스 워커 명시적 등록 (백그라운드 푸시 필수)
+        // 2. 서비스 워커 명시적 등록 (백그라운드 푸시의 핵심)
         const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js", {
           scope: "/"
         });
+        
+        // 워커가 활성화될 때까지 잠시 대기
+        await navigator.serviceWorker.ready;
 
         // 3. FCM 토큰 가져오기
-        const { getToken } = await import("firebase/messaging");
+        const { getToken, onMessage } = await import("firebase/messaging");
         const currentToken = await getToken(messaging, {
           vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
           serviceWorkerRegistration: registration
@@ -107,7 +111,6 @@ function FCMManager() {
 
         if (currentToken) {
           console.log("FCM 토큰 수집 성공:", currentToken);
-          // 3. Firestore 유저 문서에 토큰 저장
           const { doc, updateDoc, arrayUnion, serverTimestamp } = await import("firebase/firestore");
           const userRef = doc(db, "users", user.uid);
           await updateDoc(userRef, {
@@ -115,6 +118,15 @@ function FCMManager() {
             lastTokenSync: serverTimestamp()
           });
         }
+
+        // 4. 포그라운드 메시지 핸들러 (앱이 켜져 있을 때)
+        onMessage(messaging, (payload) => {
+          console.log("📱 포그라운드 메시지 수신:", payload);
+          if (payload.notification) {
+            alert(`[${payload.notification.title}]\n${payload.notification.body}`);
+          }
+        });
+
       } catch (err) {
         console.error("FCM 설정 중 오류 발생:", err);
       }
