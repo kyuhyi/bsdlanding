@@ -27,6 +27,7 @@ export default function AdminPage() {
     const [pushLinkUrl, setPushLinkUrl] = useState("");
     const [sendingPush, setSendingPush] = useState(false);
     const [pushStatus, setPushStatus] = useState<"idle" | "success" | "error">("idle");
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [oneSignalActive, setOneSignalActive] = useState(false);
     const [isSubscribed, setIsSubscribed] = useState(false);
 
@@ -87,14 +88,23 @@ export default function AdminPage() {
                 }),
             });
 
+            const data = await response.json();
+            console.log("📱 Push API Response:", data);
+
             if (response.ok) {
                 setPushStatus("success");
                 setPushTitle("");
                 setPushMessage("");
                 setPushImageUrl("");
                 setPushLinkUrl("");
+                
+                // OneSignal 응답 정보 표시
+                if (data.recipients) {
+                    console.log(`✅ 푸시 발송 성공! 수신자: ${data.recipients}명`);
+                }
             } else {
                 setPushStatus("error");
+                console.error("❌ Push Error:", data);
             }
         } catch (error) {
             console.error("Error sending push:", error);
@@ -102,6 +112,36 @@ export default function AdminPage() {
         } finally {
             setSendingPush(false);
             setTimeout(() => setPushStatus("idle"), 3000);
+        }
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setPushImageUrl(data.url);
+                console.log('✅ 이미지 업로드 성공:', data.url);
+            } else {
+                const error = await response.json();
+                alert('이미지 업로드 실패: ' + error.error);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('이미지 업로드 중 오류가 발생했습니다.');
+        } finally {
+            setUploadingImage(false);
         }
     };
 
@@ -220,14 +260,42 @@ export default function AdminPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-300">이미지 URL (선택)</label>
-                                    <input
-                                        type="url"
-                                        value={pushImageUrl}
-                                        onChange={(e) => setPushImageUrl(e.target.value)}
-                                        placeholder="https://example.com/image.jpg"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-primary outline-none"
-                                    />
+                                    <label className="text-sm font-medium text-gray-300">이미지 (선택)</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="url"
+                                            value={pushImageUrl}
+                                            onChange={(e) => setPushImageUrl(e.target.value)}
+                                            placeholder="URL 입력 또는 파일 업로드"
+                                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-brand-primary outline-none"
+                                        />
+                                        <label className="relative cursor-pointer">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="hidden"
+                                                disabled={uploadingImage}
+                                            />
+                                            <div className={`px-4 py-3 rounded-xl font-bold transition-all ${uploadingImage ? 'bg-gray-600 cursor-not-allowed' : 'bg-brand-primary hover:bg-blue-600'} text-white flex items-center gap-2`}>
+                                                {uploadingImage ? (
+                                                    <>
+                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                        업로드 중...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        📁 파일 선택
+                                                    </>
+                                                )}
+                                            </div>
+                                        </label>
+                                    </div>
+                                    {pushImageUrl && (
+                                        <div className="mt-2 p-2 bg-black/30 rounded-lg">
+                                            <img src={pushImageUrl} alt="Preview" className="max-h-32 rounded" onError={(e) => e.currentTarget.style.display = 'none'} />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-300">링크 URL (선택)</label>
