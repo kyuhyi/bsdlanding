@@ -294,6 +294,7 @@ export default function AdminPage() {
                                     {pushImageUrl && (
                                         <div className="mt-2 p-2 bg-black/30 rounded-lg">
                                             <img src={pushImageUrl} alt="Preview" className="max-h-32 rounded" onError={(e) => e.currentTarget.style.display = 'none'} />
+                                            <p className="text-[10px] text-gray-500 mt-2">💡 Tip: 푸시 알림은 2:1 비율(가로가 긴 이미지)이 가장 예쁘게 나옵니다.</p>
                                         </div>
                                     )}
                                 </div>
