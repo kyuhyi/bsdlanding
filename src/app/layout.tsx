@@ -53,11 +53,25 @@ export const metadata: Metadata = {
   },
 };
 
-// 📡 FCM(구글 푸시) 관리 컴포넌트
+// 📡 FCM(구글 푸시) 관리 및 클린업 컴포넌트
 function FCMManager() {
   const { user } = useAuth();
 
   useEffect(() => {
+    // 🧹 기존 OneSignal 및 불필요한 서비스 워커 정리
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          if (registration.active?.scriptURL.includes("OneSignal")) {
+            registration.unregister().then(() => {
+              console.log("🗑️ 기존 OneSignal 서비스 워커 제거 완료");
+              window.location.reload(); // 제거 후 새로고침하여 상태 반영
+            });
+          }
+        }
+      });
+    }
+
     if (!user || typeof window === "undefined") return;
 
     const setupFCM = async () => {
