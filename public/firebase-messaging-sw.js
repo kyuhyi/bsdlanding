@@ -1,14 +1,14 @@
 importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js");
 
-// Firebase 앱 설정 (환경 변수가 아닌 실제 값을 넣어야 합니다)
+// Firebase 앱 설정 (자동으로 채워진 실제 값입니다)
 const firebaseConfig = {
     apiKey: "AIzaSyA74W3fASfF93HD9Ig_xu5q7aO7X1X3C5A",
     authDomain: "test100-31e3c.firebaseapp.com",
     projectId: "test100-31e3c",
     storageBucket: "test100-31e3c.firebasestorage.app",
-    messagingSenderId: "305106561114", // 이 값은 실제 메시징 발신자 ID로 교체되어야 합니다
-    appId: "1:305106561114:web:e0f46a9e16060139b4f0b2" // 이 값은 실제 앱 ID로 교체되어야 합니다
+    messagingSenderId: "1075735055880",
+    appId: "1:1075735055880:web:784ff61feb9b390eaccbbd"
 };
 
 firebase.initializeApp(firebaseConfig);
