@@ -12,10 +12,16 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
+// Initialize Firebase only if API Key is present to avoid build-time crashes (static pre-rendering)
+let auth: any;
+let db: any;
+let googleProvider: any;
+
+if (firebaseConfig.apiKey) {
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    googleProvider = new GoogleAuthProvider();
+}
 
 export { auth, db, googleProvider };
