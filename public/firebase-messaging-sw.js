@@ -19,16 +19,22 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
     console.log("[firebase-messaging-sw.js] Background Message:", payload);
 
-    const notificationTitle = payload.notification.title;
+    if (!payload.notification) {
+        console.log("No notification payload found");
+        return;
+    }
+
+    const notificationTitle = payload.notification.title || "VIBE CODING";
     const notificationOptions = {
-        body: payload.notification.body,
-        icon: payload.notification.image || "/favicon.ico",
+        body: payload.notification.body || "새로운 메시지가 도착했습니다.",
+        icon: payload.notification.image || "/bsd-white.png", // 고해상도 아이콘 권장
+        badge: "/bsd-white.png",
         data: {
             url: payload.data?.link || "/"
         }
     };
 
-    self.registration.showNotification(notificationTitle, notificationOptions);
+    return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // 알림 클릭 시 해당 URL로 이동

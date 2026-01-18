@@ -1,0 +1,21 @@
+{
+  "name": "AI VIBE CODING",
+  "short_name": "VIBE CODING",
+  "description": "AI와 함께하는 새로운 코딩 교육의 시작",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030014",
+  "theme_color": "#030014",
+  "icons": [
+    {
+      "src": "/bsd-white.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/bsd-white.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

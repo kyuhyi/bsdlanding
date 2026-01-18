@@ -26,6 +26,13 @@ export const metadata: Metadata = {
   authors: [{ name: "BSD" }],
   icons: {
     icon: "/favicon.ico",
+    apple: "/bsd-white.png",
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "VIBE CODING",
   },
   openGraph: {
     title: "AI VIBE CODING = 바퍼와 함께",
@@ -86,10 +93,16 @@ function FCMManager() {
           return;
         }
 
-        // 2. FCM 토큰 가져오기
+        // 2. 서비스 워커 명시적 등록 (백그라운드 푸시 필수)
+        const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js", {
+          scope: "/"
+        });
+
+        // 3. FCM 토큰 가져오기
         const { getToken } = await import("firebase/messaging");
         const currentToken = await getToken(messaging, {
-          vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY
+          vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
+          serviceWorkerRegistration: registration
         });
 
         if (currentToken) {
